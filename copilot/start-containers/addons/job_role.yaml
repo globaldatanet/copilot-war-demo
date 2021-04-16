@@ -1,0 +1,54 @@
+# You can use any of these parameters to create conditions or mappings in your template.
+Parameters:
+  App:
+    Type: String
+    Description: Your application's name.
+  Env:
+    Type: String
+    Description: The environment name your service, job, or workflow is being deployed to.
+  Name:
+    Type: String
+    Description: The name of the service, job, or workflow being deployed.
+
+Resources:
+  # 1. In addition to your resource, if you need to access the resource from your ECS task
+  # then you need to create an AWS::IAM::ManagedPolicy that holds the permissions for your resource.
+  #
+  # For example, below is a sample policy:
+  AccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: Autoscaling
+            Action:
+              - application-autoscaling:DescribeScalableTargets
+              - application-autoscaling:RegisterScalableTarget
+            Effect: Allow
+            Resource: "*"
+          - Sid: List
+            Action:
+              - ecs:ListClusters
+              - ecs:ListServices
+            Effect: Allow
+            Resource: "*"
+          - Sid: Services
+            Action:
+              - ecs:UpdateService
+              - ecs:DescribeServices
+            Effect: Allow
+            Resource: !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/*"
+          - Sid: Parameterstore
+            Action:
+              - ssm:GetParameter
+              - ssm:PutParameter
+            Effect: Allow
+            Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/ecs-shutdown-scheduler*"
+
+
+Outputs:
+  # 1. You also need to output the IAM ManagedPolicy so that Copilot can inject it to your ECS task role.
+  AccessPolicyArn:
+    Description: "The ARN of the ManagedPolicy to attach to the task role."
+    Value: !Ref AccessPolicy
