@@ -56,26 +56,29 @@ shutdown these services in the morning and evening. This is done for cost saving
 
 ## Deploying a Codepipeline with Container Security Checks
 
-To add a security check using `hadolint` we simply added the following two steps to the default
-`buildspec.yaml`:
-```bash
-docker pull ghcr.io/hadolint/hadolint
-docker run --rm -i ghcr.io/hadolint/hadolint < Dockerfile
-```
-
 1. Initialize the pipeline
    ```bash
    copilot pipeline init
    ```
 
-2. Deploy the pipeline
+2. Update the buildspec with the security checks.
+   To add a security check using `hadolint` simply add the following two steps to the generated
+   `copilot/buildspec.yaml` where it says "Run your tests":
+   ```bash
+   docker pull ghcr.io/hadolint/hadolint
+   docker run --rm -i ghcr.io/hadolint/hadolint < Dockerfile
+   ```
+
+3. Commit and push those changes to your fork
+
+4. Deploy the pipeline
    ```bash
    copilot pipeline update
    ```
    - Activate the github connection when asked
    - The pipeline will now already be triggered
 
-3. Verify that the security check has indeed been executed.
+5. Verify that the security check has indeed been executed.
    - Search for "Run your tests" to find the testing section.
 
 ## Cleanup
